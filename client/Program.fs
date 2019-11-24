@@ -5,21 +5,20 @@ open System.Text
 
 [<EntryPoint>]
 let main _argv =
-    let server = new Socket(AddressFamily.InterNetwork,
+    let socket = new Socket(AddressFamily.InterNetwork,
                             SocketType.Stream,
                             ProtocolType.Tcp)
-//    server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true)
     
     let endPoint = new IPEndPoint(IPAddress.Loopback, 8080)
-    server.Connect(endPoint)
+    socket.Connect(endPoint)
     
     let buffer = Encoding.Default.GetBytes("test")
     
-    let sendResult = server.Send(buffer)
+    let sendResult = socket.Send(buffer)
     if sendResult = -1 then
         printfn "送信失敗"
-        server.Close()
+        socket.Close()
         1
     else
-        server.Close()
+        socket.Close()
         0
