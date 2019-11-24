@@ -20,5 +20,19 @@ let main _argv =
         socket.Close()
         1
     else
+        let memory = new MemoryStream()
+        let rec receive () =
+            let buffer = [| for _ in 1..10 -> byte(0) |]
+            let len = socket.Receive(buffer)
+            if len = 0 then
+                printfn "接続が切れました"
+                socket.Close()
+                ()
+            else
+//                printfn "%s" <| Encoding.Default.GetString(buffer, 0, len)
+                memory.Write(buffer, 0, len)
+                receive ()
+        receive ()
+        printfn "%s" <| Encoding.Default.GetString(memory.GetBuffer())
         socket.Close()
         0
