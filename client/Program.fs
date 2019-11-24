@@ -5,38 +5,21 @@ open System.Text
 
 [<EntryPoint>]
 let main _argv =
-    let endPoint = new IPEndPoint(IPAddress.Any, 8080)
     let server = new Socket(AddressFamily.InterNetwork,
                             SocketType.Stream,
                             ProtocolType.Tcp)
-    server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true)
-    server.Bind(endPoint)
-    server.Listen(10)
+//    server.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true)
     
-    printfn "client started (%s)" <| server.LocalEndPoint.ToString()
+    let endPoint = new IPEndPoint(IPAddress.Loopback, 8080)
+    server.Connect(endPoint)
     
-    let rec serve () =
-        let client = server.Accept()
-        printfn "client accepted (%s)" <| client.RemoteEndPoint.ToString()
-        
-        let buffer = [| for _ in 1..10 -> byte(0) |]
-        let stream = new MemoryStream()
-        let rec read () =
-            let len = client.Receive(buffer)
-            if len = 0 then
-                ()
-            else
-                printfn "%s" <| Encoding.Default.GetString(buffer, 0, len)
-                stream.Write(buffer, 0, len)
-                read ()
-        read ()
-        
-        let buffer = stream.GetBuffer()
-        client.Send(buffer, buffer.Length, SocketFlags.None) |> ignore
-        client.Close()
-        
-        serve ()
+    let buffer = Encoding.Default.GetBytes("test")
     
-    serve () |> ignore
-    
-    0
+    let sendResult = server.Send(buffer)
+    if sendResult = -1 then
+        printfn "送信失敗"
+        server.Close()
+        1
+    else
+        server.Close()
+        0
